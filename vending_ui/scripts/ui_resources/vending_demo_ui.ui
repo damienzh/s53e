@@ -19,7 +19,7 @@
      <x>30</x>
      <y>20</y>
      <width>961</width>
-     <height>371</height>
+     <height>361</height>
     </rect>
    </property>
    <property name="title">
@@ -62,9 +62,9 @@
    <property name="geometry">
     <rect>
      <x>30</x>
-     <y>400</y>
+     <y>390</y>
      <width>961</width>
-     <height>351</height>
+     <height>361</height>
     </rect>
    </property>
    <property name="title">
@@ -87,7 +87,7 @@
     <property name="geometry">
      <rect>
       <x>0</x>
-      <y>50</y>
+      <y>70</y>
       <width>961</width>
       <height>281</height>
      </rect>
@@ -719,7 +719,7 @@
         <bool>false</bool>
        </property>
        <property name="digitCount">
-        <number>6</number>
+        <number>8</number>
        </property>
        <property name="segmentStyle">
         <enum>QLCDNumber::Filled</enum>

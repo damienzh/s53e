@@ -2,16 +2,21 @@
 
 from PyQt5.QtWidgets import QDialog, QApplication, QInputDialog
 from PyQt5.QtGui import QPixmap
-from ui.ui_resources.vending_demo_ui import *
+from PyQt5.QtCore import pyqtSignal, pyqtSlot
+from ui_resources.vending_demo_ui import *
 import sys
+import rospy
+from std_msgs.msg import String, Float32
 
 
 class VendingUI(QDialog):
-    COKE_PIC = '../ui_resources/img/coke.jpg'
-    SPRITE_PIC = '../ui_resources/img/sprite.jpg'
-    FANTA_PIC = '../ui_resources/img/fanta.jpg'
-    DRINK_IN = '../ui_resources/img/indicator_green.jpg'
-    DRINK_OUT = '../ui_resources/img/indicator_red.jpg'
+    COKE_PIC = './ui_resources/img/coke.jpg'
+    SPRITE_PIC = './ui_resources/img/sprite.jpg'
+    FANTA_PIC = './ui_resources/img/fanta.jpg'
+    DRINK_IN = './ui_resources/img/indicator_green.jpg'
+    DRINK_OUT = './ui_resources/img/indicator_red.jpg'
+
+    DRINK_TEMP_SINGAL = pyqtSignal(str)
 
     def __init__(self):
         super(VendingUI, self).__init__()
@@ -20,6 +25,7 @@ class VendingUI(QDialog):
         self.drink_temp = 20.0
         # initialize ui
         self.init_ui()
+        self.ros_init()
 
     def init_ui(self):
         self.ui = Ui_Dialog()
@@ -35,6 +41,7 @@ class VendingUI(QDialog):
 
         # link actions
         self.ui.pushButtonRefreshStatus.clicked.connect(self.update_drink_status)
+        self.DRINK_TEMP_SINGAL.connect(self.update_drink_temp)
         self.update_drink_status()
 
     def update_drink_status(self):
@@ -50,7 +57,19 @@ class VendingUI(QDialog):
         update_label_pixmap(self.ui.labelFanta1_status, self.drink_status[4])
         update_label_pixmap(self.ui.labelFanta2_status, self.drink_status[5])
 
-        self.ui.lcdNumberTemp.display(str(self.drink_temp)+"'C")
+    @pyqtSlot(str)
+    def update_drink_temp(self, t):
+        #self.ui.lcdNumberTemp.display(str(self.drink_temp) + "'C")
+        self.ui.lcdNumberTemp.display(t)
+
+    def ros_init(self):
+        rospy.init_node('ui', anonymous=True)
+        self.temp_sub = rospy.Subscriber('drink_temp', Float32, self.update_temp_cb)
+
+    def update_temp_cb(self, msg):
+        self.drink_temp = round(msg.data, 2)
+        self.DRINK_TEMP_SINGAL.emit(str(self.drink_temp) + "'C")
+        #self.update_drink_temp()
 
 
 if __name__ == '__main__':
