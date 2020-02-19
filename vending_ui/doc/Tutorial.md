@@ -3,14 +3,14 @@
 ## 配置开发环境
 系统版本为 Ubuntu 18.04
 ### PyQt
-1. 安装PyQt：\
+1. 安装PyQt：
 由于ROS的Python版本为2.7，所以需要安装对应Python2的PyQt
 ```bash
 sudo apt install python-qt5
 ```
 2. 安装QtDesigner, pyuic:
 - QtDesigner: 以图形化界面创建编辑ui文件
-- pyuic: 将ui文件转换为pyqt文件
+- pyuic: 将ui文件转换为py文件
 ```
 sudo apt install qt5tools-dev-tools
 ```
@@ -44,23 +44,43 @@ catkin_create_pkg vending_ui rospy std_msgs std_srvs
 - 创建布局Layout
 - 创建文字输入LineEdit
 ### PyQt
-- 转换ui文件
+- 转换ui文件\
 通过`pyuic5`将由QtDesigner设计的ui文件转换为Python文件
 ```bash
 pyuic5 ui_file.ui -o ui_file.py
 ```
-- 调用ui文件
-导入转换好的ui文件，
-- 插入图片
+- 调用ui文件\
+导入转换好的ui文件，以及必要的Qt部件类
+```python
+from vending_demo_ui import *
+from PyQt5.QtWidgets import QDialog, QApplication
+```
+创建Dialog界面类，实例化通过Designer编辑的ui
+```python
+class VendingUI(QDialog):
+    def __init__(self):
+        super(VendingUI, self).__init__()
+        self.ui = UI_Dialog()
+        self.ui.setupUi(self)
+```
+创建Qt程序，显示界面
+```python
+if __name__ == 'main':
+    app = QApplication(sys.argv)
+    v = VendingUI()
+    v.show()
+    sys.exit(app.exec_())
+```
+- 插入图片\
 利用`label`显示图片
-- Signal/Slot
+- Signal/Slot\
 利用信号与槽机制实现功能触发、传递变量等
-- QThread
+- QThread\
 利用Qt创建线程
-- 显示摄像头画面
+- 显示摄像头画面\
 利用线程与信号槽实现实时显示摄像头拍摄的画面
 ### ROS
-- 显示ROS连接状态
+- 显示ROS连接状态\
 利用`rosgraph`测试当前环境中是否有ROS Master
-- 显示订阅消息
+- 显示订阅消息\
 利用Signal/Slot在界面上显示订阅的消息内容
