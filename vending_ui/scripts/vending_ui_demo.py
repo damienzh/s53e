@@ -1,9 +1,11 @@
+#!/usr/bin/env/ python
 # -*- coding: utf-8 -*-
 
 from PyQt5.QtWidgets import QDialog, QApplication, QInputDialog
-from PyQt5.QtGui import QPixmap
-from PyQt5.QtCore import pyqtSignal, pyqtSlot
+from PyQt5.QtGui import QPixmap, QImage
+from PyQt5.QtCore import pyqtSignal, pyqtSlot, QThread
 from ui_resources.vending_demo_ui import *
+from LiveCamera import LiveCamera
 import sys
 import os
 import rospy
@@ -38,6 +40,9 @@ class VendingUI(QDialog):
         self.ui = Ui_Dialog()
         self.ui.setupUi(self)
 
+        # create video thread
+        video_thread = LiveCamera(self)
+
         # setup drink pictures
         self.ui.labelCoke1.setPixmap(QPixmap(self.COKE_PIC))
         self.ui.labelCoke2.setPixmap(QPixmap(self.COKE_PIC))
@@ -50,12 +55,13 @@ class VendingUI(QDialog):
         self.DRINK_TEMP_SINGAL.connect(self.update_drink_temp)
         self.DRINK_STATS_SIGNAL.connect(self.update_drink_status)
         self.DRINK_READY_SIGNAL.connect(self.update_drink_ready)
+        video_thread.img_signal.connect(self.display_video)
 
         # link actions
         self.ui.pushButtonRefreshStatus.clicked.connect(self.update_drink_status)
         self.update_drink_status()
 
-    @pyqtSlot(name='update drink status trigger')
+    @pyqtSlot()
     def update_drink_status(self):
         def update_label_pixmap(label, status):
             if status == '0':
@@ -69,16 +75,21 @@ class VendingUI(QDialog):
         update_label_pixmap(self.ui.labelFanta1_status, self.drink_status[4])
         update_label_pixmap(self.ui.labelFanta2_status, self.drink_status[5])
 
-    @pyqtSlot(str, name='drink temperature string')
+    @pyqtSlot(str)
     def update_drink_temp(self, t):
         self.ui.lcdNumberTemp.display(t)
 
-    @pyqtSlot(str, name='drink ready to pick')
+    @pyqtSlot(str)
     def update_drink_ready(self, ready):
         if ready == '1':
             self.ui.labelPickReadyStats.setPixmap(QPixmap(self.STATUS_GREEN))
         else:
             self.ui.labelPickReadyStats.setPixmap(QPixmap(self.STATUS_RED))
+
+    @pyqtSlot(QImage)
+    def display_video(self, qimg):
+        img = QPixmap.fromImage(qimg)
+        self.ui.labelVideo.setPixmap(img)
 
     def check_ros_master(self):
         if rosgraph.is_master_online():
