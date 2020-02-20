@@ -20,3 +20,8 @@ class LiveCamera(QThread):
                 bytesPerLine = w * ch
                 img = QImage(frame_rgb.data, w, h, bytesPerLine, QImage.Format_RGB888)
                 self.img_signal.emit(img)
+
+
+class FaceDetector:
+    def __init__(self):
+        pass

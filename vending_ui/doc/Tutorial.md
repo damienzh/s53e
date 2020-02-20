@@ -74,7 +74,8 @@ if __name__ == 'main':
 - 插入图片\
 利用`label`显示图片
 - Signal/Slot\
-利用信号与槽机制实现功能触发、传递变量等
+利用信号与槽机制实现功能触发、传递变量等，参考[官方文档](https://www.riverbankcomputing.com/static/Docs/PyQt5/signals_slots.html)。
+
 - QThread\
 利用Qt创建线程
 - 显示摄像头画面\
