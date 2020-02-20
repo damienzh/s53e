@@ -28,28 +28,50 @@ ROS包的编译与运行需要放在工作空间中，在合适位置创建ROS�
 mkdir -p catkin_ws/src
 ```
 4. 创建包：\
-由于UI需要与ROS连接，所以为UI创建ROS包
+由于UI需要与ROS连接，所以为UI创建ROS包，所有UI的编辑都在该包中完成
 ```bash
 catkin_create_pkg vending_ui rospy std_msgs std_srvs
 ```
 ## 使用QtDesigner和PyQt搭建界面
-使用QtDesigner设计编辑界面画面，使用PyQt编辑接口连接
+使用QtDesigner设计编辑界面画面，使用PyQt编辑接口连接等内部功能
 ### QtDesigner
-- QtDesigner界面介绍
-- 创建对话窗口Dialog
-- 创建按钮PushButton
-- 创建显示Label
-- 创建数字显示LCD
-- 创建显示区域GroupBox
-- 创建布局Layout
-- 创建文字输入LineEdit
+#### QtDesigner界面介绍
+![designer](./img/designer.png)
+1. 应用窗口左侧提供了可以插入界面的部件，包括按钮、输入、容器等
+2. 应用窗口中央是界面编辑区域
+3. 应用窗口右侧为部件属性编辑区域，可以编辑所选部件的对象名，位置、大小、颜色、动作等。
+#### 创建对话窗口Dialog
+对话窗口为UI界面的基础，在窗口内可以添加各类部件
+![dialog](./img/dialog.png)
+#### 创建按钮PushButton
+1. 从部件选择侧边栏中选择`pushButton`,拖动至`Dialog`窗口中
+![pushButton](./img/pushButton.png)
+2. 选择按钮，在右侧编辑按钮的属性
+- objectName：该部件在整个ui中唯一的名称，也是后续编程中调用该按钮的对象名
+- geometry：位置与大小可以在ui编辑界面中拖动改变，也可以在属性编辑栏手动输入
+- text：该按钮在ui中显示的文字
+- autoRepeat：该按钮再被按住是是否自动重复发出按压的信号
+![pushButton_p](./img/pushButton_property.png)
+#### 创建显示Label
+`label`部件不仅可以用来显示文字，也可以用来显示图片。
+![label](./img/label.png)
+1. 从左侧显示部件栏中选择Label拖动添加至Dialog界面中
+2. 在右侧属性编辑栏中编辑部件的对象名、位置、大小、显示默认显示文字、字体、文字位置、图片、缩放等。
+#### 创建数字显示LCD
+
+#### 创建显示区域GroupBox
+
+#### 创建布局Layout
+
+#### 创建文字输入LineEdit
+
 ### PyQt
-- 转换ui文件\
+#### 转换ui文件
 通过`pyuic5`将由QtDesigner设计的ui文件转换为Python文件
 ```bash
 pyuic5 ui_file.ui -o ui_file.py
 ```
-- 调用ui文件\
+#### 调用ui文件
 导入转换好的ui文件，以及必要的Qt部件类
 ```python
 from vending_demo_ui import *
@@ -71,17 +93,87 @@ if __name__ == 'main':
     v.show()
     sys.exit(app.exec_())
 ```
-- 插入图片\
-利用`label`显示图片
-- Signal/Slot\
+#### 插入图片
+利用`label`部件显示图片。`label`部件不仅可以显示文字，也可以用来显示图片。显示图片需要将图片转换为`Pixmap`类。
+1. 导入必要的模块
+```python
+from PyQt5.QtGui import QPixmap
+```
+2. 利用`QPixmap`类读取并转换本地图片，然后更新到对应`label`部件中
+```python
+ui.labelCoke.setPixmap(QPixmap('coke_picture.jpg'))
+```
+#### Signal/Slot
 利用信号与槽机制实现功能触发、传递变量等，参考[官方文档](https://www.riverbankcomputing.com/static/Docs/PyQt5/signals_slots.html)。
+1. 创建信号, 创建的信号可以传递参数也可以不传递参数，传递的参数可以是Qt的数据类型也可以是Python的数据类型。
+```python
+from PyQt5.QtCore import pyqtSignal
+# 创建信号
+DRINK_TEMP_SIGNAL = pyqtSignal(str)
+# 定义信号发送机制
+def update_temp():
+    temp = '20.0'
+    DRINK_TEMP_SIGNAL.emit(temp)
+```
+2. 创建槽，槽的构建需与信号类型一致。
+```python
+from PyQt5.QtCore import pyqtSlot
+# 创建信号接收槽
+@pyqtSlot(str)
+def update_drink_temp(t):
+    ui.lcdNumberTemp.display(t)
+```
+3. 连接信号与槽，同一信号可以连接多个槽。
+```python
+DRINK_TEMP_SIGNAL.connect(update_drink_temp)
+```
+#### QThread
+利用Qt创建线程，以QThread为基础，只需要重新复写`run()`。
+1. 创建新线程类，继承`Qthread`
+```python
+from PyQt5.QtCore import QThread
 
-- QThread\
-利用Qt创建线程
-- 显示摄像头画面\
+class LiveCamera(QThread):
+    def run(self):
+        pass
+```
+2. 在UI类中，实例化进程类
+```python
+# 导入创建的线程类
+import LiveCamera
+# 实例化子线程类
+video_thread = LiveCamera(self)
+# 启动线程
+video_thread.start()
+```
+#### 显示摄像头画面
 利用线程与信号槽实现实时显示摄像头拍摄的画面
 ### ROS
-- 显示ROS连接状态\
+#### 显示ROS连接状态
 利用`rosgraph`测试当前环境中是否有ROS Master
-- 显示订阅消息\
+```python
+import rosgraph
+if rosgraph.is_master_online():
+    print "Master is online"
+else:
+    print "Master is offline"
+```
+#### 显示订阅消息
 利用Signal/Slot在界面上显示订阅的消息内容
+1. 初始化ROS节点
+```python
+import rospy
+rospy.init_node('ui')
+```
+2. 定义订阅器
+```python
+from std_msgs.msg import Float32
+temp_sub = rospy.Subscriber('drink_temp', Float32, update_temp_cb)
+```
+3. 定义callback函数，可以在callback函数中直接定义显示更新，也可以利用Signal/Slot来传递变量
+```python
+def update_temp_cb(self, msg):
+    temp = round(msg.data, 2)
+    # 通过信号传递数值
+    DRINK_TEMP_SIGNAL.emit(str(temp))
+```

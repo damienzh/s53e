@@ -60,6 +60,7 @@ class VendingUI(QDialog):
         # link actions
         self.ui.pushButtonRefreshStatus.clicked.connect(self.update_drink_status)
         self.update_drink_status()
+        video_thread.start()
 
     @pyqtSlot()
     def update_drink_status(self):
