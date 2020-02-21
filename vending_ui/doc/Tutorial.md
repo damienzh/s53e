@@ -42,6 +42,7 @@ catkin_create_pkg vending_ui rospy std_msgs std_srvs
 3. 应用窗口右侧为部件属性编辑区域，可以编辑所选部件的对象名，位置、大小、颜色、动作等。
 #### 创建对话窗口Dialog
 对话窗口为UI界面的基础，在窗口内可以添加各类部件
+
 ![dialog](./img/dialog.png)
 #### 创建按钮PushButton
 1. 从部件选择侧边栏中选择`pushButton`,拖动至`Dialog`窗口中
@@ -54,15 +55,47 @@ catkin_create_pkg vending_ui rospy std_msgs std_srvs
 ![pushButton_p](./img/pushButton_property.png)
 #### 创建显示Label
 `label`部件不仅可以用来显示文字，也可以用来显示图片。
+
 ![label](./img/label.png)
 1. 从左侧显示部件栏中选择Label拖动添加至Dialog界面中
-2. 在右侧属性编辑栏中编辑部件的对象名、位置、大小、显示默认显示文字、字体、文字位置、图片、缩放等。
+2. 在右侧属性编辑栏中编辑部件的属性参数
+- objectName：该部件在整个ui中唯一的名称，也是后续编程中调用该按钮的对象名
+- geometry：位置与大小可以在ui编辑界面中拖动改变，也可以在属性编辑栏手动输入
+- frameShape：部件边框类型
+- text：该部件在界面上默认的显示文字
+- scaledContents：缩放内容，显示图片时自动缩放图片充满部件
+对象名、位置、大小、显示默认显示文字、字体、文字位置、图片、缩放等。
 #### 创建数字显示LCD
+使用`lcdNumder`部件可以以类似LCD的形式显示数字与字符
 
+![lcd](./img/lcdNumber.png)
+1. 从左侧显示部件栏选择LCD拖动添加至Dialog界面中
+2. 在右侧属性编辑栏中编辑部件的属性参数
+- objectName：该部件在整个ui中唯一的名称，也是后续编程中调用该按钮的对象名
+- palette：颜色显示方案，数字颜色使用`Light`,数字阴影颜色使用`Dark`
+- styleSheet：颜色选项，可以设定背景颜色`background-color`，边界颜色`border-color`等
+- digitCount：部件可显示数字最大位数
+- mode：显示数字类型，十进制或16进制等
 #### 创建显示区域GroupBox
+使用`groupBox`来建立部件分组
 
+![group](./img/groupBox.png)
+1. 从左侧容器选择栏选择`Group Box`拖动添加至Dialog界面中
+2. 拖动其他部件至该容器中
+3. 在右侧属性编辑栏中编辑部件属性参数
+- objectName：该容器在整个ui中唯一的名称
+- title：该容器在界面上显示的标题内容
+- alignment：标题相对部件的对齐位置
+- checkable：该容器是否可选，对该容器内所有部件都生效
+- checked：该容器是否默认选择
 #### 创建布局Layout
+布局可以固定多个部件之间的相互位置以及分布
 
+![layout](./img/layout.png)
+1. 选择多个部件，从右键菜单中选择创建布局， 水平布局、垂直布局或网格布局等
+2. 创建布局后，部件会自动调整之间的相互位置
+
+![layout2](./img/layout2.png)
 #### 创建文字输入LineEdit
 
 ### PyQt
@@ -134,6 +167,7 @@ DRINK_TEMP_SIGNAL.connect(update_drink_temp)
 from PyQt5.QtCore import QThread
 
 class LiveCamera(QThread):
+    #复写运行功能
     def run(self):
         pass
 ```
