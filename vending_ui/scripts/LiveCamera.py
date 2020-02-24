@@ -1,3 +1,4 @@
+#!/usr/bin/env/ python
 # -*- coding: utf-8 -*-
 
 from PyQt5.QtCore import QThread, pyqtSignal
@@ -10,11 +11,12 @@ class LiveCamera(QThread):
 
     def run(self):
         cap = cv2.VideoCapture(0)
-        cap.set(cv2.CAP_PROP_FRAME_HEIGHT, 320)
-        cap.set(cv2.CAP_PROP_FRAME_WIDTH, 480)
+        # cap.set(cv2.CAP_PROP_FRAME_HEIGHT, 320)
+        # cap.set(cv2.CAP_PROP_FRAME_WIDTH, 480)
         while True:
             ret, frame = cap.read()
             if ret:
+                cv2.resize(frame, (480, 320))
                 frame_rgb = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
                 h, w, ch = frame_rgb.shape
                 bytesPerLine = w * ch
@@ -22,6 +24,3 @@ class LiveCamera(QThread):
                 self.img_signal.emit(img)
 
 
-class FaceDetector:
-    def __init__(self):
-        pass

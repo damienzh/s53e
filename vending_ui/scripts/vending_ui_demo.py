@@ -1,7 +1,7 @@
 #!/usr/bin/env/ python
 # -*- coding: utf-8 -*-
 
-from PyQt5.QtWidgets import QDialog, QApplication, QInputDialog
+from PyQt5.QtWidgets import QDialog, QApplication, QInputDialog, QLineEdit
 from PyQt5.QtGui import QPixmap, QImage
 from PyQt5.QtCore import pyqtSignal, pyqtSlot, QThread
 from ui_resources.vending_demo_ui import *
@@ -56,14 +56,16 @@ class VendingUI(QDialog):
         self.ui.labelSprite2.setPixmap(QPixmap(self.SPRITE_PIC))
 
         # 连接信号与槽
-        self.DRINK_TEMP_SINGAL.connect(self.update_drink_temp)
+        self.DRINK_TEMP_SIGNAL.connect(self.update_drink_temp)
         self.DRINK_STATS_SIGNAL.connect(self.update_drink_status)
         self.DRINK_READY_SIGNAL.connect(self.update_drink_ready)
         video_thread.img_signal.connect(self.display_video)
 
         # 连接预设动作
         self.ui.pushButtonRefreshStatus.clicked.connect(self.update_drink_status)
+        self.ui.pushButtonRegister.clicked.connect(self.register_name)
         self.update_drink_status()
+        self.update_drink_ready('0')
 
     # 创建饮料状态更新接收槽
     @pyqtSlot()
@@ -107,6 +109,9 @@ class VendingUI(QDialog):
             self.ui.labelROSConnectionStats.setPixmap(QPixmap(self.STATUS_GREEN))
         else:
             self.ui.labelROSConnectionStats.setPixmap(QPixmap(self.STATUS_RED))
+
+    def register_name(self):
+        (name, ok) = QInputDialog.getText(self, '注册新用户', '请输入用户名', QLineEdit.Normal)
 
     # 获取ROS Master地址系统环境变量
     def get_ros_master(self):
