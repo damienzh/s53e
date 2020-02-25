@@ -2,13 +2,11 @@
 
 # Form implementation generated from reading ui file 'vending_demo_ui.ui'
 #
-# Created by: PyQt5 UI code generator 5.14.1
+# Created by: PyQt5 UI code generator 5.11.3
 #
 # WARNING! All changes made in this file will be lost!
 
-
 from PyQt5 import QtCore, QtGui, QtWidgets
-
 
 class Ui_Dialog(object):
     def setupUi(self, Dialog):
@@ -18,13 +16,24 @@ class Ui_Dialog(object):
         self.groupBoxIdentity.setGeometry(QtCore.QRect(30, 20, 671, 361))
         self.groupBoxIdentity.setObjectName("groupBoxIdentity")
         self.labelVideo = QtWidgets.QLabel(self.groupBoxIdentity)
-        self.labelVideo.setGeometry(QtCore.QRect(40, 30, 480, 320))
+        self.labelVideo.setGeometry(QtCore.QRect(130, 40, 320, 240))
         self.labelVideo.setFrameShape(QtWidgets.QFrame.Box)
         self.labelVideo.setAlignment(QtCore.Qt.AlignCenter)
         self.labelVideo.setObjectName("labelVideo")
         self.pushButtonRegister = QtWidgets.QPushButton(self.groupBoxIdentity)
         self.pushButtonRegister.setGeometry(QtCore.QRect(550, 40, 101, 31))
         self.pushButtonRegister.setObjectName("pushButtonRegister")
+        self.pushButtonLogin = QtWidgets.QPushButton(self.groupBoxIdentity)
+        self.pushButtonLogin.setGeometry(QtCore.QRect(550, 90, 99, 27))
+        self.pushButtonLogin.setObjectName("pushButtonLogin")
+        self.pushButtonLogout = QtWidgets.QPushButton(self.groupBoxIdentity)
+        self.pushButtonLogout.setGeometry(QtCore.QRect(550, 140, 99, 27))
+        self.pushButtonLogout.setObjectName("pushButtonLogout")
+        self.labelLoginStatus = QtWidgets.QLabel(self.groupBoxIdentity)
+        self.labelLoginStatus.setGeometry(QtCore.QRect(550, 190, 101, 20))
+        self.labelLoginStatus.setFrameShape(QtWidgets.QFrame.Box)
+        self.labelLoginStatus.setAlignment(QtCore.Qt.AlignCenter)
+        self.labelLoginStatus.setObjectName("labelLoginStatus")
         self.groupBoxVending = QtWidgets.QGroupBox(Dialog)
         self.groupBoxVending.setGeometry(QtCore.QRect(30, 390, 961, 361))
         self.groupBoxVending.setObjectName("groupBoxVending")
@@ -274,7 +283,10 @@ class Ui_Dialog(object):
         Dialog.setWindowTitle(_translate("Dialog", "Dialog"))
         self.groupBoxIdentity.setTitle(_translate("Dialog", "Identity"))
         self.labelVideo.setText(_translate("Dialog", "Video"))
-        self.pushButtonRegister.setText(_translate("Dialog", "Register"))
+        self.pushButtonRegister.setText(_translate("Dialog", "注册用户"))
+        self.pushButtonLogin.setText(_translate("Dialog", "登录"))
+        self.pushButtonLogout.setText(_translate("Dialog", "注销"))
+        self.labelLoginStatus.setText(_translate("Dialog", "LoginStatus"))
         self.groupBoxVending.setTitle(_translate("Dialog", "Drinks"))
         self.pushButtonRefreshStatus.setText(_translate("Dialog", "Refresh"))
         self.groupBoxCoke1.setTitle(_translate("Dialog", "可口可乐"))
@@ -303,3 +315,4 @@ class Ui_Dialog(object):
         self.labelMasterURI.setText(_translate("Dialog", "ROS Master URI"))
         self.labelROSConnection.setText(_translate("Dialog", "ROS Connection"))
         self.labelROSConnectionStats.setText(_translate("Dialog", "TextLabel"))
+
