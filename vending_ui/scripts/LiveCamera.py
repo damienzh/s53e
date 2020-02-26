@@ -12,6 +12,7 @@ class LiveCamera(QThread):
 
     def run(self):
         cap = cv2.VideoCapture(0)
+        # 设定相机拍摄分辨率,(1920 x 1080, 640 x 480, 320 x 240)
         cap.set(cv2.CAP_PROP_FRAME_HEIGHT, 240)
         cap.set(cv2.CAP_PROP_FRAME_WIDTH, 320)
         while True:

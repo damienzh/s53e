@@ -3,7 +3,7 @@
 
 from PyQt5.QtWidgets import QDialog, QApplication, QInputDialog, QLineEdit
 from PyQt5.QtGui import QPixmap, QImage
-from PyQt5.QtCore import pyqtSignal, pyqtSlot, QThread
+from PyQt5.QtCore import pyqtSignal, pyqtSlot, QThread, QSignalMapper
 from ui_resources.vending_demo_ui import *
 from cvqt_helper import *
 from LiveCamera import LiveCamera
@@ -35,7 +35,7 @@ class VendingUI(QDialog):
         self.drink_temp = 20.0
         self.video_frame = None
         self.user_login_status = False
-        self.do_recognition = False
+        self.do_recognition = True
         self.drink_order = None
         self.drink_ready = '0'
         # 初始化ui界面
@@ -86,6 +86,14 @@ class VendingUI(QDialog):
         self.DRINK_STATS_SIGNAL.connect(self.update_drink_status)
         self.DRINK_READY_SIGNAL.connect(self.update_drink_ready)
         video_thread.img_signal.connect(self.update_video_frame)
+
+        # 设定饮料订单发送Mapper
+        self.order_mapper = QSignalMapper()
+        for button in self.drink_button_list:
+            button.clicked.connect(self.order_mapper.map)
+        for i in range(6):
+            self.order_mapper.setMapping(self.drink_button_list[i], str(i))
+        self.order_mapper.mapped[str].connect(self.drink_order_ros)
 
         # 连接预设动作
         self.ui.pushButtonRefreshStatus.clicked.connect(self.update_drink_status)
@@ -212,12 +220,15 @@ class VendingUI(QDialog):
         self.DRINK_READY_SIGNAL.emit()
 
     # 发布饮料订单
-    def drink_order_ros(self):
-        pass
+    def drink_order_ros(self, cmd):
+        msg = String()
+        msg.data = cmd
+        self.pick_cmd.publish(msg)
 
 
 if __name__ == '__main__':
     app = QApplication(sys.argv)
     vending_ui = VendingUI()
+    vending_ui.do_recognition = False
     vending_ui.show()
     sys.exit(app.exec_())

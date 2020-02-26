@@ -32,6 +32,15 @@ mkdir -p catkin_ws/src
 ```bash
 catkin_create_pkg vending_ui rospy std_msgs std_srvs
 ```
+### 人脸识别
+1. 安装`dlib`
+```
+pip install dlib
+```
+2. 安装`face_recognition`
+```
+pip install face_recognition
+```
 ## 使用QtDesigner和PyQt搭建界面
 使用QtDesigner设计编辑界面画面，使用PyQt编辑接口连接等内部功能
 ### QtDesigner
@@ -96,7 +105,7 @@ catkin_create_pkg vending_ui rospy std_msgs std_srvs
 2. 创建布局后，部件会自动调整之间的相互位置
 
 ![layout2](./img/layout2.png)
-#### 创建文字输入LineEdit
+#### 创建文字输入显示框LineEdit
 
 ### PyQt
 #### 转换ui文件
@@ -136,6 +145,24 @@ from PyQt5.QtGui import QPixmap
 ```python
 ui.labelCoke.setPixmap(QPixmap('coke_picture.jpg'))
 ```
+#### 弹出输入对话框 QInputDialog
+弹出输入对话框可以用来获取用户输入数据，例如按钮弹出窗口，获取输入数据
+
+![inputDialog](./img/inputdialog.png)
+1. 创建弹出窗口，指定弹出窗口的输入类型，字符串、整数等
+```python
+from PyQt5.QtWidgets import QInputDialog, QLineEdit
+# 创建字符串输入窗口，(对象，窗口标题，输入标题，输入显示模式）
+(text, ok) = QInputDialog.getText(self, 'Text Input', 'Type string', QLineEdit.Normal)
+```
+2. 该窗口可以作为按钮等动作的接收槽
+```python
+ui.pushButton.clicked.connect(input_dialog)
+def input_dialog:
+    (text, ok) = QInputDialog.getText(self, 'Text Input', 'Type string', QLineEdit.Normal)
+    if ok:
+        return text
+```
 #### Signal/Slot
 利用信号与槽机制实现功能触发、传递变量等，参考[官方文档](https://www.riverbankcomputing.com/static/Docs/PyQt5/signals_slots.html)。
 1. 创建信号, 创建的信号可以传递参数也可以不传递参数，传递的参数可以是Qt的数据类型也可以是Python的数据类型。
@@ -160,6 +187,35 @@ def update_drink_temp(t):
 ```python
 DRINK_TEMP_SIGNAL.connect(update_drink_temp)
 ```
+#### QSignalMapper[api](https://www.riverbankcomputing.com/static/Docs/PyQt5/api/qtcore/qsignalmapper.html)
+QSignalMapper可以用来应对当有多个不含参数的信号连接同一个槽的情况，使用QSignalMapper可以设定对应信号在接收时的参数，例如字符串或整数。
+QSignalMapper通过map接收信号，再通过mapped信号发送接收到的信号与参数
+1. 导入所需包
+```python
+from PyQt5.QtCore import QSignalMapper, pyqtSlot
+```
+2. 创建SignalMapper
+```python
+mapper = QSignalMapper()
+```
+3. 连接信号到Mapper的槽，例如`pushButton.clicked`等
+```python
+ui.pushButton1.clicked.connect(mapper.map)
+ui.pushButton2.clicked.connect(mapper.map)
+ui.pushButton3.clicked.connect(mapper.map)
+```
+4. 设定对应信号的参数，参数类型可以为`str`,`int`,`QObject`
+```python
+mapper.setMapping(ui.pushButton1, '1')
+mapper.setMapping(ui.pushButton2, '2')
+mapper.setMapping(ui.pushButton3, '3')
+```
+5. 连接Mapper与槽，连接时需要根据标签的数据类型连接对应的槽
+```python
+mapper.mapped[str].connect(display_slot)
+def display_slot(s):
+    ui.label.setText(s)
+```
 #### QThread
 利用Qt创建线程，以QThread为基础，只需要重新复写`run()`。
 1. 创建新线程类，继承`Qthread`
@@ -182,6 +238,32 @@ video_thread.start()
 ```
 #### 显示摄像头画面
 利用线程与信号槽实现实时显示摄像头拍摄的画面
+1. 创建线程类时，创建图像传输信号
+```python
+class LiveCamera(QThread):
+    img_signal = pyqtSignal(QImage)    
+    #复写运行功能
+    def run(self):
+        ......
+        self.img_signal.emit(qimg)
+```
+2. 在ui中实例化视觉线程
+```python
+class ui(QDialog):
+    video_thread = LiveCamera()
+```
+3. 连接线程信号与本地接收槽
+```python
+video_thread.img_signal.connect(display_function)
+# 接收QImage信号，通过`label`在ui中显示图像
+@pyqtSlot(QImage)
+def display_function(self, qimg):
+    self.ui.labelDisplay.setPixmap(QPixmap.fromImage(qimg))
+```
+4. 启动线程
+```python
+video_thread.start()
+```
 ### ROS
 #### 显示ROS连接状态
 利用`rosgraph`测试当前环境中是否有ROS Master

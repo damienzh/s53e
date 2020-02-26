@@ -8,7 +8,7 @@
 - 相机：默认使用`VideoCapture(0)`
 - 相机调用分辨率：QVGA(320 x 240)
 #### 人脸识别 `RecogFace`
-人脸识别调用`face_recognition`进行侦测、识别
+人脸识别调用[face_recognition](https://github.com/ageitgey/face_recognition)进行侦测、识别
 - 已知用户存储位置 `known_faces_path`:
 `/data/known_faces`， 每个用户以用户名为文件夹，文件夹内存放用户照片\
 ![known_faces](./doc/img/directory_tree.png)

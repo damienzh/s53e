@@ -25,7 +25,9 @@ class RecogFace:
         :param frame: cv frame to be detected
         :return: cv frame marked faces with rectangle
         """
+        # 为了提高速度人脸识别全部在小尺寸图像上进行
         small_rgb = cv2.resize(frame, (0, 0), fx=1.0 / self.scale_ratio, fy=1.0 / self.scale_ratio)[:, :, ::-1]
+
         locations = fr.face_locations(small_rgb, model=self.detection_model)
         if len(locations) == 0:
             self.face_detected = False
