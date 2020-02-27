@@ -34,6 +34,9 @@ class Ui_Dialog(object):
         self.labelLoginStatus.setFrameShape(QtWidgets.QFrame.Box)
         self.labelLoginStatus.setAlignment(QtCore.Qt.AlignCenter)
         self.labelLoginStatus.setObjectName("labelLoginStatus")
+        self.checkBoxFaceRecognition = QtWidgets.QCheckBox(self.groupBoxIdentity)
+        self.checkBoxFaceRecognition.setGeometry(QtCore.QRect(20, 40, 97, 22))
+        self.checkBoxFaceRecognition.setObjectName("checkBoxFaceRecognition")
         self.groupBoxVending = QtWidgets.QGroupBox(Dialog)
         self.groupBoxVending.setGeometry(QtCore.QRect(30, 390, 961, 361))
         self.groupBoxVending.setObjectName("groupBoxVending")
@@ -274,6 +277,9 @@ class Ui_Dialog(object):
         self.labelROSConnectionStats.setScaledContents(True)
         self.labelROSConnectionStats.setAlignment(QtCore.Qt.AlignCenter)
         self.labelROSConnectionStats.setObjectName("labelROSConnectionStats")
+        self.pushButtonROSInit = QtWidgets.QPushButton(self.groupBoxROSControl)
+        self.pushButtonROSInit.setGeometry(QtCore.QRect(10, 110, 99, 27))
+        self.pushButtonROSInit.setObjectName("pushButtonROSInit")
 
         self.retranslateUi(Dialog)
         QtCore.QMetaObject.connectSlotsByName(Dialog)
@@ -287,6 +293,7 @@ class Ui_Dialog(object):
         self.pushButtonLogin.setText(_translate("Dialog", "登录"))
         self.pushButtonLogout.setText(_translate("Dialog", "注销"))
         self.labelLoginStatus.setText(_translate("Dialog", "LoginStatus"))
+        self.checkBoxFaceRecognition.setText(_translate("Dialog", "人脸识别"))
         self.groupBoxVending.setTitle(_translate("Dialog", "Drinks"))
         self.pushButtonRefreshStatus.setText(_translate("Dialog", "Refresh"))
         self.groupBoxCoke1.setTitle(_translate("Dialog", "可口可乐"))
@@ -315,4 +322,5 @@ class Ui_Dialog(object):
         self.labelMasterURI.setText(_translate("Dialog", "ROS Master URI"))
         self.labelROSConnection.setText(_translate("Dialog", "ROS Connection"))
         self.labelROSConnectionStats.setText(_translate("Dialog", "TextLabel"))
+        self.pushButtonROSInit.setText(_translate("Dialog", "Init ROS"))
 

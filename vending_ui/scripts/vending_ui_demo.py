@@ -1,8 +1,8 @@
 #!/usr/bin/env/ python
 # -*- coding: utf-8 -*-
 
-from PyQt5.QtWidgets import QDialog, QApplication, QInputDialog, QLineEdit
-from PyQt5.QtGui import QPixmap, QImage
+from PyQt5.QtWidgets import QDialog, QApplication, QInputDialog, QLineEdit, QMessageBox
+from PyQt5.QtGui import QPixmap, QImage, QCloseEvent
 from PyQt5.QtCore import pyqtSignal, pyqtSlot, QThread, QSignalMapper
 from ui_resources.vending_demo_ui import *
 from cvqt_helper import *
@@ -10,6 +10,8 @@ from LiveCamera import LiveCamera
 from RecogFace import RecogFace
 import sys
 import os
+import subprocess
+import time
 import rospy
 import rosgraph
 from std_msgs.msg import String, Float32
@@ -28,20 +30,20 @@ class VendingUI(QDialog):
     DRINK_STATS_SIGNAL = pyqtSignal()
     DRINK_READY_SIGNAL = pyqtSignal()
 
+    # 初始化ui
     def __init__(self):
         super(VendingUI, self).__init__()
         # 初始化内部参数
         self.drink_status = '000000'
         self.drink_temp = 20.0
-        self.video_frame = None
         self.user_login_status = False
-        self.do_recognition = True
+        self.ros_connection = False
         self.drink_order = None
         self.drink_ready = '0'
         # 初始化ui界面
         self.init_ui()
         # 初始化ROS节点
-        self.ros_init()
+        #self.ros_init()
         # 初始化人脸识别
         self.recognition_init()
 
@@ -60,12 +62,12 @@ class VendingUI(QDialog):
         self.ui.labelLoginStatus.setText('未登录')
 
         # 建立指示与按钮列表
-        self.drink_label_list = [self.ui.labelCoke1_status,
-                                 self.ui.labelCoke2_status,
-                                 self.ui.labelSprite1_status,
-                                 self.ui.labelSprite2_status,
-                                 self.ui.labelFanta1_status,
-                                 self.ui.labelFanta2_status]
+        self.drink_status_list = [self.ui.labelCoke1_status,
+                                  self.ui.labelCoke2_status,
+                                  self.ui.labelSprite1_status,
+                                  self.ui.labelSprite2_status,
+                                  self.ui.labelFanta1_status,
+                                  self.ui.labelFanta2_status]
         self.drink_button_list = [self.ui.pushButtonCoke1Order,
                                   self.ui.pushButtonCoke2Order,
                                   self.ui.pushButtonSprite1Order,
@@ -100,8 +102,12 @@ class VendingUI(QDialog):
         self.ui.pushButtonRegister.clicked.connect(self.register_name)
         self.ui.pushButtonLogin.clicked.connect(self.user_login)
         self.ui.pushButtonLogout.clicked.connect(self.user_logout)
+        self.ui.pushButtonROSInit.clicked.connect(self.ros_init)
+
+        # 更新初始化状态
         self.update_drink_status()
         self.update_drink_ready()
+        self.check_ros_connection()
 
     # ============================== Slots ===================================
     # 创建饮料状态更新接收槽
@@ -114,7 +120,7 @@ class VendingUI(QDialog):
             else:
                 label.setPixmap(QPixmap(self.STATUS_GREEN))
         for i in range(6):
-            update_label_pixmap(self.drink_label_list[i], self.drink_status[i])
+            update_label_pixmap(self.drink_status_list[i], self.drink_status[i])
 
     # 创建更新饮料温度接收槽
     @pyqtSlot(str)
@@ -132,9 +138,11 @@ class VendingUI(QDialog):
     # 创建视频显示更新槽
     @pyqtSlot(QImage)
     def update_video_frame(self, qimg):
-        self.video_frame = qimg
-        self.display_video()
+        self.display_video(qimg)
 
+    # def closeEvent(self, QCloseEvent):
+    #     if self.ros_master:
+    #         self.ros_master.terminate()
     # ============================  Video / Face Recognition ========================
     # 初始化人脸识别
     def recognition_init(self):
@@ -142,18 +150,19 @@ class VendingUI(QDialog):
         self.face_detected = False
         self.face_recognition.load_known_faces()
 
-    def recognize_face(self):
-        cv_img = qimage_to_cv(self.video_frame)
+    # 侦测识别当前帧中的人脸
+    def recognize_face(self, qimg):
+        cv_img = qimage_to_cv(qimg)
         face_img = self.face_recognition.detection(cv_img)
         return cv_to_qimg(face_img)
 
     # 视频显示更新
-    def display_video(self):
-        if self.do_recognition:
+    def display_video(self, qimg):
+        if self.ui.checkBoxFaceRecognition.isChecked():
             # 执行人脸识别，并转换QImage到Pixmap
-            img = QPixmap.fromImage(self.recognize_face())
+            img = QPixmap.fromImage(self.recognize_face(qimg))
         else:
-            img = QPixmap.fromImage(self.video_frame)
+            img = QPixmap.fromImage(qimg)
         self.ui.labelVideo.setPixmap(img)
 
     # 创建注册用户弹出输入窗口
@@ -181,23 +190,39 @@ class VendingUI(QDialog):
         uri = os.getenv('ROS_MASTER_URI')
         return uri.split('//')[1]
 
+    def set_ros_master(self):
+        uri = self.ui.lineEdit.text()
+        os.putenv('ROS_MASTER_URI', 'http://'+uri)
+
+    def start_ros_master(self):
+        self.ros_master = subprocess.Popen('roscore', stdout=subprocess.PIPE)
+        time.sleep(2)
+
     # 检测ROS启动状态，更新ROS状态显示label
-    def check_ros_master(self):
+    def check_ros_connection(self):
         if rosgraph.is_master_online():
             self.ui.labelROSConnectionStats.setPixmap(QPixmap(self.STATUS_GREEN))
+            return True
         else:
             self.ui.labelROSConnectionStats.setPixmap(QPixmap(self.STATUS_RED))
+            return False
 
-    # ROS节点
+    # 启动ROS节点
     def ros_init(self):
-        # 启动ui节点
-        rospy.init_node('ui', anonymous=True)
-        # 设定消息订阅
-        rospy.Subscriber('drink_temp', Float32, self.update_temp_cb)
-        rospy.Subscriber('drink_stats', String, self.update_drink_status_cb)
-        rospy.Subscriber('drink_ready', String, self.update_drink_ready_cb)
-        # 设定消息发布
-        self.pick_cmd = rospy.Publisher('drink_order', String, queue_size=1)
+        # self.start_ros_master()
+        if rosgraph.is_master_online():
+            # 启动ui节点
+            rospy.init_node('ui', anonymous=True)
+            if self.check_ros_connection():
+                self.ros_connection = True
+            # 设定消息订阅
+            rospy.Subscriber('drink_temp', Float32, self.update_temp_cb)
+            rospy.Subscriber('drink_stats', String, self.update_drink_status_cb)
+            rospy.Subscriber('drink_ready', String, self.update_drink_ready_cb)
+            # 设定消息发布
+            self.pick_cmd = rospy.Publisher('drink_order', String, queue_size=1)
+        else:
+            QMessageBox.warning(self, 'ROS Warning', 'No ROS Master', QMessageBox.Ok)
 
     # 温度更新
     def update_temp_cb(self, msg):
@@ -229,6 +254,5 @@ class VendingUI(QDialog):
 if __name__ == '__main__':
     app = QApplication(sys.argv)
     vending_ui = VendingUI()
-    vending_ui.do_recognition = False
     vending_ui.show()
     sys.exit(app.exec_())
