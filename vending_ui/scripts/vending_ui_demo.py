@@ -140,9 +140,10 @@ class VendingUI(QDialog):
     def update_video_frame(self, qimg):
         self.display_video(qimg)
 
-    # def closeEvent(self, QCloseEvent):
-    #     if self.ros_master:
-    #         self.ros_master.terminate()
+    def closeEvent(self, QCloseEvent):
+        if self.ros_master:
+            rospy.signal_shutdown('closing ui')
+            self.ros_master.terminate()
     # ============================  Video / Face Recognition ========================
     # 初始化人脸识别
     def recognition_init(self):
@@ -195,7 +196,8 @@ class VendingUI(QDialog):
         os.putenv('ROS_MASTER_URI', 'http://'+uri)
 
     def start_ros_master(self):
-        self.ros_master = subprocess.Popen('roscore', stdout=subprocess.PIPE)
+        self.ros_master = subprocess.Popen('roscore', stdin=subprocess.PIPE,
+                                           stdout=subprocess.PIPE, stderr=subprocess.PIPE)
         time.sleep(2)
 
     # 检测ROS启动状态，更新ROS状态显示label
@@ -209,10 +211,10 @@ class VendingUI(QDialog):
 
     # 启动ROS节点
     def ros_init(self):
-        # self.start_ros_master()
+        self.start_ros_master()
         if rosgraph.is_master_online():
             # 启动ui节点
-            rospy.init_node('ui', anonymous=True)
+            rospy.init_node('ui', anonymous=True, disable_signals=True)
             if self.check_ros_connection():
                 self.ros_connection = True
             # 设定消息订阅
