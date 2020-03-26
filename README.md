@@ -2,7 +2,10 @@
 智能传感器与执行器实训台ROS软件包
 
 ## System prerequisites
-1. Install ROS and create workspace following official procedure
+1. ROS
+2. OpenCV
+3. PyQt
+4. face_recognition
 
 ## Installation
 git clone this package into catkin workspace src
